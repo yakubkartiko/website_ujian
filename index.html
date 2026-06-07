@@ -59,10 +59,10 @@
   /* ── HEADER ── */
   .header {
     flex-shrink: 0;
-    padding: clamp(14px, 3.5vw, 24px) clamp(16px, 4vw, 32px) clamp(10px, 2vw, 16px);
+    padding: clamp(16px, 4vw, 28px) clamp(16px, 4vw, 32px) clamp(10px, 2vw, 14px);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 6px;
     position: relative;
     z-index: 2;
   }
@@ -75,28 +75,31 @@
 
   .accent-bar {
     width: 6px;
-    height: clamp(30px, 5vw, 42px);
+    height: clamp(46px, 9vw, 62px);
     background: var(--yellow);
     border-radius: 3px;
+    flex-shrink: 0;
   }
 
   .title {
-    font-size: clamp(22px, 5.5vw, 38px);
+    font-size: clamp(24px, 6.5vw, 42px);
     font-weight: 800;
     color: var(--white);
     letter-spacing: -0.5px;
-    line-height: 1;
+    line-height: 1.05;
   }
 
   .datetime-pill {
     background: var(--yellow);
     color: var(--blue);
-    font-size: clamp(9px, 2vw, 13px);
+    font-size: clamp(10px, 2.2vw, 13px);
     font-weight: 700;
-    padding: 5px 12px;
+    padding: 5px 14px;
     border-radius: 100px;
     white-space: nowrap;
     letter-spacing: 0.2px;
+    align-self: flex-start;
+    margin-left: 16px;
   }
 
   /* ── MAIN CONTENT ── */
@@ -455,7 +458,7 @@
     <div class="header">
       <div class="header-left">
         <div class="accent-bar"></div>
-        <div class="title">JADWAL UJIAN</div>
+        <div class="title">JADWAL<br>UJIAN</div>
       </div>
       <div class="datetime-pill" id="datetimePill">--</div>
     </div>
