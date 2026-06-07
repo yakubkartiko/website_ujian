@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jadwal Ujian</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #00416b;
+    --blue-light: #005a94;
+    --yellow: #fbd504;
+    --yellow-dark: #e0be03;
+    --white: #ffffff;
+    --black: #0a0a0a;
+    --card-bg: rgba(255,255,255,0.97);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--blue);
+  }
+
+  .app {
+    width: 100%; height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, #00416b 0%, #002d4a 60%, #001f36 100%);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Decorative background shapes */
+  .app::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: rgba(251, 213, 4, 0.07);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .app::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 220px; height: 220px;
+    background: rgba(251, 213, 4, 0.05);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    flex-shrink: 0;
+    padding: clamp(14px, 3.5vw, 24px) clamp(16px, 4vw, 32px) clamp(10px, 2vw, 16px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .accent-bar {
+    width: 6px;
+    height: clamp(30px, 5vw, 42px);
+    background: var(--yellow);
+    border-radius: 3px;
+  }
+
+  .title {
+    font-size: clamp(22px, 5.5vw, 38px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .datetime-pill {
+    background: var(--yellow);
+    color: var(--blue);
+    font-size: clamp(9px, 2vw, 13px);
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 clamp(16px, 4vw, 32px) clamp(16px, 3vw, 24px);
+    gap: clamp(12px, 2.5vw, 20px);
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── TODAY CARD ── */
+  .today-section { flex-shrink: 0; }
+
+  .section-label {
+    font-size: clamp(10px, 2.2vw, 13px);
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .today-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: clamp(14px, 3vw, 22px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  }
+
+  .today-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--yellow);
+  }
+
+  .today-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: clamp(8px, 2vw, 14px);
+  }
+
+  .today-date-label {
+    font-size: clamp(10px, 2vw, 13px);
+    font-weight: 600;
+    color: var(--blue);
+    opacity: 0.7;
+  }
+
+  .today-date {
+    font-size: clamp(12px, 2.5vw, 15px);
+    font-weight: 700;
+    color: var(--blue);
+  }
+
+  .room-badge {
+    background: var(--blue);
+    color: var(--white);
+    font-size: clamp(10px, 2vw, 13px);
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  .today-subject {
+    font-size: clamp(15px, 3.5vw, 22px);
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1.2;
+    margin-bottom: clamp(8px, 1.5vw, 12px);
+  }
+
+  .countdown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--yellow);
+    color: var(--blue);
+    font-size: clamp(10px, 2vw, 13px);
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: clamp(8px, 1.5vw, 12px);
+  }
+
+  .countdown-dot {
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .today-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,65,107,0.1);
+    padding-top: clamp(8px, 1.5vw, 12px);
+    margin-top: 4px;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .info-label {
+    font-size: clamp(9px, 1.8vw, 11px);
+    font-weight: 600;
+    color: rgba(0,65,107,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .info-value {
+    font-size: clamp(12px, 2.5vw, 16px);
+    font-weight: 700;
+    color: var(--blue);
+  }
+
+  /* ── NEXT SECTION ── */
+  .next-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .next-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+
+  .next-title {
+    font-size: clamp(10px, 2.2vw, 13px);
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .slide-indicators {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .dot.active {
+    background: var(--yellow);
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* Slider */
+  .slider-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+  }
+
+  .slider-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .slide {
+    min-width: 100%;
+    height: 100%;
+    padding-bottom: 4px;
+  }
+
+  .next-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: clamp(12px, 2.5vw, 20px);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .next-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(0,65,107,0.15);
+  }
+
+  .next-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .next-card-date {
+    font-size: clamp(11px, 2.2vw, 14px);
+    font-weight: 700;
+    color: var(--blue);
+  }
+
+  .next-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,65,107,0.08);
+    color: var(--blue);
+    font-size: clamp(9px, 1.8vw, 11px);
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .next-subject {
+    font-size: clamp(14px, 3vw, 19px);
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1.2;
+    margin: clamp(6px, 1.5vw, 10px) 0;
+  }
+
+  .next-room {
+    font-size: clamp(10px, 2vw, 13px);
+    font-weight: 600;
+    color: rgba(0,65,107,0.6);
+    margin-bottom: clamp(8px, 1.5vw, 12px);
+  }
+
+  .next-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,65,107,0.1);
+    padding-top: clamp(8px, 1.5vw, 10px);
+  }
+
+  /* No exam today */
+  .no-exam-card {
+    background: rgba(255,255,255,0.06);
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 10px;
+  }
+
+  .no-exam-icon {
+    font-size: clamp(28px, 6vw, 42px);
+    opacity: 0.5;
+  }
+
+  .no-exam-text {
+    font-size: clamp(13px, 2.8vw, 17px);
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+  }
+
+  /* Done card */
+  .done-card {
+    background: rgba(251, 213, 4, 0.08);
+    border: 2px solid rgba(251, 213, 4, 0.2);
+    border-radius: var(--radius);
+    padding: clamp(14px, 3vw, 22px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .done-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--yellow);
+  }
+
+  /* Swipe hint */
+  .swipe-hint {
+    text-align: center;
+    font-size: clamp(9px, 1.8vw, 11px);
+    color: rgba(255,255,255,0.25);
+    font-weight: 500;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Desktop layout */
+  @media (min-width: 600px) {
+    .app {
+      align-items: center;
+      justify-content: center;
+    }
+    .inner-wrapper {
+      width: 100%;
+      max-width: 480px;
+      height: 100dvh;
+      max-height: 820px;
+      display: flex;
+      flex-direction: column;
+    }
+    .header, .main {
+      max-width: 480px;
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .inner-wrapper {
+      max-height: 860px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="inner-wrapper" id="innerWrapper">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        <div class="accent-bar"></div>
+        <div class="title">JADWAL UJIAN</div>
+      </div>
+      <div class="datetime-pill" id="datetimePill">--</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <!-- TODAY -->
+      <div class="today-section">
+        <div class="section-label">Hari ini</div>
+        <div id="todayCard"></div>
+      </div>
+
+      <!-- NEXT -->
+      <div class="next-section">
+        <div class="next-header">
+          <div class="next-title">Ujian Selanjutnya</div>
+          <div class="slide-indicators" id="dots"></div>
+        </div>
+        <div class="slider-wrapper">
+          <div class="slider-track" id="sliderTrack"></div>
+        </div>
+        <div class="swipe-hint" id="swipeHint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const EXAMS = [
+  { no: 1, day: "Senin",   date: "2026-06-08", label: "Senin, 8 Juni 2026",     subject: "Teknologi Informasi Geospasial",                  time: "10:00–12:00", room: "Ruang Kuliah E 304",             seat: 10 },
+  { no: 2, day: "Selasa",  date: "2026-06-09", label: "Selasa, 9 Juni 2026",    subject: "KKL 3 Analisis dan Pemodelan Geospasial",          time: "07:30–09:30", room: "Ruang Kuliah D 104",             seat: 20 },
+  { no: 3, day: "Rabu",    date: "2026-06-10", label: "Rabu, 10 Juni 2026",     subject: "Penginderaan Jauh Atmosfer dan Perubahan Iklim",   time: "13:00–15:00", room: "Ruang Kuliah E 109",             seat: 2  },
+  { no: 4, day: "Kamis",   date: "2026-06-11", label: "Kamis, 11 Juni 2026",    subject: "Usulan Penelitian",                               time: "10:00–12:00", room: "Ruang Kuliah E 109",             seat: 3  },
+  { no: 5, day: "Kamis",   date: "2026-06-11", label: "Kamis, 11 Juni 2026",    subject: "Sains Informasi Geografi untuk Hidrosfer",        time: "13:00–15:00", room: "Ruang Kuliah Auditorium Merapi",  seat: 60 },
+  { no: 6, day: "Senin",   date: "2026-06-15", label: "Senin, 15 Juni 2026",    subject: "Manajemen Survei dan Pemetaan",                   time: "10:00–12:00", room: "Ruang Kuliah E 304",             seat: 68 },
+  { no: 7, day: "Rabu",    date: "2026-06-17", label: "Rabu, 17 Juni 2026",     subject: "Analisis dan Evaluasi Medan Berbasis Citra",      time: "13:00–15:00", room: "Ruang Kuliah E 304",             seat: 60 },
+];
+
+function parseExamStart(exam) {
+  const [h, m] = exam.time.split('–')[0].split(':').map(Number);
+  const d = new Date(exam.date);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function parseExamEnd(exam) {
+  const [h, m] = exam.time.split('–')[1].split(':').map(Number);
+  const d = new Date(exam.date);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return null;
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hrs  = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  if (days > 0) return `${days} hari ${hrs} jam lagi`;
+  if (hrs > 0)  return `${hrs} jam ${mins} menit lagi`;
+  return `${mins} menit ${secs} detik lagi`;
+}
+
+function formatCountdownShort(ms) {
+  if (ms <= 0) return null;
+  const totalSec = Math.floor(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hrs  = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  if (days > 0) return `${days}h ${hrs}j lagi`;
+  if (hrs > 0)  return `${hrs}j ${mins}m lagi`;
+  return `${mins}m ${secs}d lagi`;
+}
+
+function getRoom(exam) {
+  // Extract short room code if it has E-xxx pattern
+  const m = exam.room.match(/E\s*(\d+)/);
+  const m2 = exam.room.match(/D\s*(\d+)/);
+  if (m) return `E-${m[1]}`;
+  if (m2) return `D-${m2[1]}`;
+  if (exam.room.includes('Auditorium')) return 'Auditorium';
+  return exam.room;
+}
+
+// ── Slider state ──
+let currentSlide = 0;
+let slides = [];
+let startX = 0, isDragging = false;
+
+function renderAll() {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+
+  // ── TODAY ──
+  const todayExams = EXAMS.filter(e => e.date === todayStr);
+  const todayCard = document.getElementById('todayCard');
+
+  if (todayExams.length === 0) {
+    todayCard.innerHTML = `
+      <div style="background:rgba(255,255,255,0.06);border:2px dashed rgba(255,255,255,0.15);border-radius:var(--radius);padding:clamp(14px,3vw,20px);text-align:center;">
+        <div style="font-size:clamp(11px,2.5vw,14px);font-weight:700;color:rgba(255,255,255,0.35);">Tidak ada ujian hari ini 🎉</div>
+      </div>`;
+  } else {
+    // Show first today exam (most common: 1 per day, but handle multiple)
+    const exam = todayExams[0]; // for today card, show first
+    const startDt = parseExamStart(exam);
+    const endDt   = parseExamEnd(exam);
+    const msToStart = startDt - now;
+    const msToEnd   = endDt - now;
+    let countdownHTML = '';
+    if (msToEnd <= 0) {
+      countdownHTML = `<div class="countdown-badge" style="background:rgba(0,65,107,0.1);color:rgba(0,65,107,0.5);">✓ Selesai</div>`;
+    } else if (msToStart > 0) {
+      countdownHTML = `<div class="countdown-badge"><span class="countdown-dot"></span><span id="cdToday">${formatCountdown(msToStart)}</span></div>`;
+    } else {
+      countdownHTML = `<div class="countdown-badge" style="background:#00c45a;color:white;"><span class="countdown-dot" style="background:white"></span><span id="cdToday">Sedang berlangsung</span></div>`;
+    }
+
+    todayCard.innerHTML = `
+      <div class="today-card">
+        <div class="today-top">
+          <div>
+            <div class="today-date-label">Hari ini</div>
+            <div class="today-date">${exam.label}</div>
+          </div>
+          <div class="room-badge">${getRoom(exam)}</div>
+        </div>
+        <div class="today-subject">${exam.subject}</div>
+        ${countdownHTML}
+        <div class="today-info">
+          <div class="info-item">
+            <span class="info-label">Jam</span>
+            <span class="info-value">${exam.time} WIB</span>
+          </div>
+          <div class="info-item" style="text-align:right;">
+            <span class="info-label">No. Kursi</span>
+            <span class="info-value">${exam.seat}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── NEXT EXAMS (all future + in-progress as "selanjutnya") ──
+  const upcoming = EXAMS.filter(e => {
+    const end = parseExamEnd(e);
+    return end > now;
+  });
+
+  const track = document.getElementById('sliderTrack');
+  const dotsEl = document.getElementById('dots');
+  const swipeHint = document.getElementById('swipeHint');
+
+  if (upcoming.length === 0) {
+    track.innerHTML = `<div class="slide"><div class="no-exam-card"><div class="no-exam-icon">🏆</div><div class="no-exam-text">Semua ujian telah selesai!</div></div></div>`;
+    dotsEl.innerHTML = '';
+    swipeHint.textContent = '';
+    return;
+  }
+
+  slides = upcoming;
+  // Keep currentSlide in range
+  if (currentSlide >= slides.length) currentSlide = 0;
+
+  // Build slides
+  track.innerHTML = slides.map((exam, i) => {
+    const startDt = parseExamStart(exam);
+    const endDt   = parseExamEnd(exam);
+    const msToStart = startDt - now;
+    const msToEnd   = endDt - now;
+    const isToday = exam.date === todayStr;
+
+    let countdownText = '';
+    let countdownStyle = '';
+    if (msToEnd <= 0) {
+      countdownText = '✓ Selesai';
+    } else if (msToStart > 0) {
+      countdownText = formatCountdownShort(msToStart);
+    } else {
+      countdownText = '🟢 Berlangsung';
+      countdownStyle = 'background:#00c45a;color:white;';
+    }
+
+    const cardClass = isToday && i === 0 ? 'done-card' : 'next-card';
+
+    return `<div class="slide">
+      <div class="${cardClass}">
+        <div>
+          <div class="next-card-top">
+            <div class="next-card-date">${exam.label}</div>
+            <div class="next-countdown" style="${countdownStyle}">${countdownText}</div>
+          </div>
+          <div class="next-subject">${exam.subject}</div>
+          <div class="next-room">${exam.room}</div>
+        </div>
+        <div class="next-info">
+          <div class="info-item">
+            <span class="info-label">Jam</span>
+            <span class="info-value" style="font-size:clamp(12px,2.5vw,16px);">${exam.time} WIB</span>
+          </div>
+          <div class="info-item" style="text-align:right;">
+            <span class="info-label">No. Kursi</span>
+            <span class="info-value" style="font-size:clamp(12px,2.5vw,16px);">${exam.seat}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Dots
+  dotsEl.innerHTML = slides.map((_, i) =>
+    `<div class="dot ${i === currentSlide ? 'active' : ''}" onclick="goToSlide(${i})"></div>`
+  ).join('');
+
+  // Swipe hint
+  swipeHint.textContent = '';
+
+  // Apply position
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+}
+
+function goToSlide(i) {
+  currentSlide = i;
+  renderAll();
+}
+
+// Touch / drag handling
+function setupSwipe() {
+  const wrapper = document.querySelector('.slider-wrapper');
+
+  wrapper.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  wrapper.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0 && currentSlide < slides.length - 1) currentSlide++;
+      else if (diff < 0 && currentSlide > 0) currentSlide--;
+      renderAll();
+    }
+  }, { passive: true });
+
+  wrapper.addEventListener('mousedown', e => {
+    startX = e.clientX;
+    isDragging = true;
+  });
+  wrapper.addEventListener('mouseup', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diff = startX - e.clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0 && currentSlide < slides.length - 1) currentSlide++;
+      else if (diff < 0 && currentSlide > 0) currentSlide--;
+      renderAll();
+    }
+  });
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) { currentSlide++; renderAll(); }
+  if (e.key === 'ArrowLeft' && currentSlide > 0) { currentSlide--; renderAll(); }
+});
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const d = days[now.getDay()];
+  const date = now.getDate();
+  const mon = months[now.getMonth()];
+  const yr = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('datetimePill').textContent = `${d}, ${date} ${mon} ${yr}; ${hh}:${mm}:${ss} WIB`;
+}
+
+// Live countdown update without full re-render
+function updateCountdowns() {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+
+  // Today card countdown
+  const cdToday = document.getElementById('cdToday');
+  if (cdToday) {
+    const todayExams = EXAMS.filter(e => e.date === todayStr);
+    if (todayExams.length > 0) {
+      const exam = todayExams[0];
+      const startDt = parseExamStart(exam);
+      const endDt   = parseExamEnd(exam);
+      const msToStart = startDt - now;
+      const msToEnd   = endDt - now;
+      if (msToEnd > 0 && msToStart > 0) {
+        cdToday.textContent = formatCountdown(msToStart);
+      }
+    }
+  }
+}
+
+// Full re-render every minute to update structure; clock every second
+let lastMinute = -1;
+function tick() {
+  const now = new Date();
+  updateClock();
+  updateCountdowns();
+  if (now.getMinutes() !== lastMinute) {
+    lastMinute = now.getMinutes();
+    renderAll();
+  }
+  requestAnimationFrame(() => setTimeout(tick, 1000));
+}
+
+// Init
+setupSwipe();
+renderAll();
+tick();
+</script>
+</body>
+</html>
